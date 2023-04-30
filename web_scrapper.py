@@ -50,8 +50,8 @@ def fetch_pages(base_url, num_pages, max_workers=None,debug=False):
     num_pages = num_pages if num_pages else total_urls
     num_pages = min(num_pages, total_urls)
     left_pages = (total_urls - num_pages) > 0
-    print(colored(f'Leaving {total_urls - num_pages} pages.', 'yellow')) if left_pages else None
     print(colored('Fetching {} pages from {}...'.format(num_pages, base_url), 'yellow'))
+    print(colored(f'Leaving {total_urls - num_pages} pages.', 'yellow')) if left_pages else None
 
     if max_workers is None:
         max_workers = min(math.ceil(num_pages / 10), 10)
@@ -84,8 +84,8 @@ def main():
     if not url:
         url = input('Enter website URL: ')
     if args.no_limit is False:
-        num_pages = input('Enter number of pages (default: 3): ')
-        num_pages = int(num_pages) if num_pages else 3
+        num_pages = input('Enter number of pages (default: 100): ')
+        num_pages = int(num_pages) if num_pages else 100
     if url is None or url == '':
         print(colored('URL cannot be empty.', 'red'))
         return
