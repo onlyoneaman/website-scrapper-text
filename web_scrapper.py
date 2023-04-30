@@ -7,6 +7,7 @@ import argparse
 import concurrent.futures
 from termcolor import colored
 import math
+from tqdm import tqdm
 
 
 def fetch_website_info(url):
@@ -47,6 +48,9 @@ def fetch_pages(base_url, num_pages, max_workers=None,debug=False):
     site_urls = get_all_sites(base_url)
     total_urls = len(site_urls)
     num_pages = num_pages if num_pages else total_urls
+    num_pages = min(num_pages, total_urls)
+    left_pages = (total_urls - num_pages) > 0
+    print(colored(f'Leaving {total_urls - num_pages} pages.', 'yellow')) if left_pages else None
     print(colored('Fetching {} pages from {}...'.format(num_pages, base_url), 'yellow'))
 
     if max_workers is None:
@@ -57,13 +61,10 @@ def fetch_pages(base_url, num_pages, max_workers=None,debug=False):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
-        for url_index in range(total_urls):
+        for url_index in range(num_pages):
             url = site_urls[url_index]
-            if url_index >= num_pages:
-                print(f'Fetched {num_pages} pages. Leaving remaining {total_urls - num_pages} pages.')
-                break
             futures.append(executor.submit(fetch_page, url, directory, url_index, total_urls, debug))
-        for future in concurrent.futures.as_completed(futures):
+        for future in tqdm(concurrent.futures.as_completed(futures), total=num_pages):
             future.result()
     end_time = time.time()
     total_time = "{:.2f}".format(end_time - start_time)
@@ -80,13 +81,11 @@ def main():
     url = args.url
     debug = args.debug
     num_pages = None
-    if not args.debug:
-        debug = False
-    if not args.no_limit:
-        num_pages = input('Enter number of pages (default: 3): ')
-        num_pages = int(num_pages) if num_pages else 3
     if not url:
         url = input('Enter website URL: ')
+    if args.no_limit is False:
+        num_pages = input('Enter number of pages (default: 3): ')
+        num_pages = int(num_pages) if num_pages else 3
     if url is None or url == '':
         print(colored('URL cannot be empty.', 'red'))
         return

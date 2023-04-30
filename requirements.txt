@@ -7,5 +7,6 @@ lxml==4.9.2
 requests==2.29.0
 soupsieve==2.4.1
 termcolor==2.3.0
+tqdm==4.65.0
 urllib3==1.26.15
 validators==0.20.0
