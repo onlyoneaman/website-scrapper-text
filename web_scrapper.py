@@ -42,12 +42,19 @@ def fetch_pages(base_url, num_pages, max_workers=None,debug=False):
     """
     Fetches the specified number of pages from the site and saves them to files in a directory named after the base URL.
     """
+    default_pages = 100
     start_time = time.time()
     directory = os.path.join('public', get_base_url(base_url))
     os.makedirs(directory, exist_ok=True)
     site_urls = get_all_sites(base_url)
     total_urls = len(site_urls)
-    num_pages = num_pages if num_pages else total_urls
+    if total_urls > default_pages:
+        if num_pages is False or num_pages is None:
+            print("Found {} pages.".format(total_urls))
+            num_pages = input('Enter number of pages to scrape (default: {}): '.format(default_pages))
+            num_pages = int(num_pages) if num_pages else default_pages
+    else:
+        num_pages = total_urls
     num_pages = min(num_pages, total_urls)
     left_pages = (total_urls - num_pages) > 0
     print(colored('Fetching {} pages from {}...'.format(num_pages, base_url), 'yellow'))
@@ -74,7 +81,7 @@ def fetch_pages(base_url, num_pages, max_workers=None,debug=False):
 
 def main():
     parser = argparse.ArgumentParser(description='Fetch website pages and create knowledge base')
-    parser.add_argument('url', metavar='URL', type=str, nargs='?', const=None, help='website URL')
+    parser.add_argument('--url', metavar='URL', type=str, nargs='?', const=None, help='website URL')
     parser.add_argument('--no-limit', '-nl', action='store_true', help='fetch all available pages')
     parser.add_argument('--debug', '-d', action='store_true', help='shows all debug messages')
     args = parser.parse_args()
@@ -83,9 +90,6 @@ def main():
     num_pages = None
     if not url:
         url = input('Enter website URL: ')
-    if args.no_limit is False:
-        num_pages = input('Enter number of pages (default: 100): ')
-        num_pages = int(num_pages) if num_pages else 100
     if url is None or url == '':
         print(colored('URL cannot be empty.', 'red'))
         return

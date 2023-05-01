@@ -30,3 +30,16 @@ Enter number of pages (default: 3): 100
 5. The knowledge base will be created in the `public` folder with your website name.
 
 
+## Options
+
+1. Pass the website name  as arguments.
+
+```
+python web_scrapper.py --url https://www.example.com
+```
+
+2. Scrape all the pages of the website. (Default: 100)
+
+```
+python web_scrapper.py --no-limit
+```
