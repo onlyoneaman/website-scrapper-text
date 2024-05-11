@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
+from termcolor import colored
+import os
 
 
 def get_root_url(url):
@@ -81,3 +83,17 @@ def get_all_sites(base_url):
     sitemap_url = urljoin(base_url, '/sitemap.xml')
     site_urls += get_all_sitemap_urls(base_url, sitemap_url)
     return site_urls
+
+def fetch_website_info(url):
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
+        return soup
+    except Exception as e:
+        print(colored(f'Error fetching website info: {e}', 'red'))
+        return None
+
+def save_text(soup, directory, filename):
+    text = soup.get_text()
+    with open(os.path.join(directory, filename), 'w', encoding='utf-8') as file:
+        file.write(text)
