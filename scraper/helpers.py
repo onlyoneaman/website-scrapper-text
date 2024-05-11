@@ -95,5 +95,19 @@ def fetch_website_info(url):
 
 def save_text(soup, directory, filename):
     text = soup.get_text()
+    save_file(text, directory, filename)
+
+def save_file(text, directory, filename):
     with open(os.path.join(directory, filename), 'w', encoding='utf-8') as file:
         file.write(text)
+
+def fetch_reader_info(url):
+    try:
+        response = requests.get(f'https://r.jina.ai/{url}', timeout=10)
+        return response.text
+    except requests.exceptions.Timeout:
+        print(colored(f'Timeout fetching reader info for {url}', 'red'))
+        return None
+    except Exception as e:
+        print(colored(f'Error fetching reader info: {e}', 'red'))
+        return None

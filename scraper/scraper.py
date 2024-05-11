@@ -5,18 +5,25 @@ import concurrent.futures
 from termcolor import colored
 import math
 from tqdm import tqdm
-from scraper.helpers import get_all_sites, get_full_path, get_root_url, get_base_url, fetch_website_info, save_text
+from scraper.helpers import get_all_sites, get_full_path, get_root_url, get_base_url, fetch_website_info, save_text, save_file, fetch_reader_info
 from scraper.constants import Constants
 
-def fetch_page(url, directory, current, total, debug):
+def fetch_page(url, directory, current, total, debug, reader):
     try:
         print(f'Fetching page {current + 1} / {total}: {url}') if debug else None
         start_time = time.time()
-        soup = fetch_website_info(url)
-        if soup is None:
-            return
-        filename = get_full_path(url) + '.txt'
-        save_text(soup, directory, filename)
+        if reader:
+            text = fetch_reader_info(url)
+            if text is None:
+                return
+            filename = get_full_path(url) + '.md'
+            save_file(text, directory, filename)          
+        else:
+            soup = fetch_website_info(url)
+            if soup is None:
+                return
+            filename = get_full_path(url) + '.txt'
+            save_text(soup, directory, filename)
         end_time = time.time()
         if debug:
             print(f'Fetched and saved {url} in {"{:.2f}".format(end_time - start_time)} seconds.')
@@ -29,6 +36,7 @@ class Scraper:
         parser.add_argument('--url', type=str, help='Website URL to scrape')
         parser.add_argument('--no-limit', '-nl', action='store_true', help='fetch all available pages')
         parser.add_argument('--debug', '-d', action='store_true', help='Enable debug output')
+        parser.add_argument('--reader', '-r', action='store_true', help='Enable reader mode')
         self.parser = parser
 
     def run(self):
@@ -38,6 +46,7 @@ class Scraper:
         self.url = args.url or url
         self.num_pages = None if args.no_limit else Constants['MAX_PAGES']
         self.debug = args.debug
+        self.reader = args.reader
         self.fetch_pages(self.url, self.num_pages, debug=self.debug)
 
     def fetch_pages(self, url, num_pages, max_workers=None, debug=False):
@@ -66,7 +75,7 @@ class Scraper:
                 max_workers = min(math.ceil(num_pages / 10), 10)
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [executor.submit(fetch_page, site_urls[i], directory, i, num_pages, debug) for i in range(num_pages)]
+                futures = [executor.submit(fetch_page, site_urls[i], directory, i, num_pages, debug, self.reader) for i in range(num_pages)]
                 list(tqdm(concurrent.futures.as_completed(futures), total=num_pages))
 
             end_time = time.time()
