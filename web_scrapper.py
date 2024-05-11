@@ -14,9 +14,13 @@ def fetch_website_info(url):
     """
     Fetches website info and returns the BeautifulSoup object.
     """
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'lxml')
-    return soup
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
+        return soup
+    except Exception as e:
+        print(colored(f'Error fetching website info: {e}', 'red'))
+        return None
 
 
 def save_text(soup, directory, filename):
@@ -29,16 +33,21 @@ def save_text(soup, directory, filename):
 
 
 def fetch_page(url, directory, current, total, debug):
-    print(f'Fetching page {current + 1} / {total}: {url}') if debug else None
-    start_time = time.time()
-    soup = fetch_website_info(url)
-    filename = get_full_path(url) + '.txt'
-    save_text(soup, directory, filename)
-    end_time = time.time()
-    print(f'Fetched and saved {url} in {"{:.2f}".format(end_time - start_time)} seconds.') if debug else None
+    try:
+        print(f'Fetching page {current + 1} / {total}: {url}') if debug else None
+        start_time = time.time()
+        soup = fetch_website_info(url)
+        if soup is None:
+            print(colored(f'Error fetching page {url}', 'red'))
+            return
+        filename = get_full_path(url) + '.txt'
+        save_text(soup, directory, filename)
+        end_time = time.time()
+        print(f'Fetched and saved {url} in {"{:.2f}".format(end_time - start_time)} seconds.') if debug else None
+    except Exception as e:
+        print(colored(f'Error fetching page {url}: {e}', 'red'))
 
-
-def fetch_pages(base_url, num_pages, max_workers=None,debug=False):
+def fetch_pages(base_url, num_pages, max_workers=None,debug=False,reader=False):
     """
     Fetches the specified number of pages from the site and saves them to files in a directory named after the base URL.
     """
@@ -84,10 +93,12 @@ def main():
     parser.add_argument('--url', metavar='URL', type=str, nargs='?', const=None, help='website URL')
     parser.add_argument('--no-limit', '-nl', action='store_true', help='fetch all available pages')
     parser.add_argument('--debug', '-d', action='store_true', help='shows all debug messages')
+    parser.add_argument('--reader', '-r', action='store_true', help='read the fetched pages')
     args = parser.parse_args()
     url = args.url
     debug = args.debug
     num_pages = None
+    reader = args.reader
     if not url:
         url = input('Enter website URL: ')
     if url is None or url == '':
@@ -95,7 +106,7 @@ def main():
         return
     base_url = get_root_url(url)
     print("Fetching pages from '{}'...".format(base_url))
-    fetch_pages(base_url, num_pages, debug=debug)
+    fetch_pages(base_url, num_pages, debug=debug, reader=reader)
 
 
 if __name__ == '__main__':

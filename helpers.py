@@ -57,6 +57,7 @@ def get_all_sitemap_urls(base_url, sitemap_url):
         loc_tag = sitemap_tag.find('loc')
         if loc_tag:
             sitemap_url = urljoin(base_url, loc_tag.text)
+            sitemap_url = sitemap_url.strip()
             site_urls += get_all_sitemap_urls(base_url, sitemap_url)
     urlset_tags = soup.find_all('urlset')
     for urlset_tag in urlset_tags:
@@ -64,7 +65,8 @@ def get_all_sitemap_urls(base_url, sitemap_url):
         for url_tag in url_tags:
             loc_tag = url_tag.find('loc')
             if loc_tag:
-                site_urls.append(loc_tag.text)
+                loc_tag_text = loc_tag.text.strip()
+                site_urls.append(loc_tag_text)
     return site_urls
 
 
