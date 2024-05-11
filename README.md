@@ -16,13 +16,13 @@ pip install -r requirements.txt
 
 3. Run the script
 ```
-python web_scrapper.py
+python -m scraper --url
 ```
 
 4. Enter the website name
 ```
-Enter website URL: https://www.example.com
-Enter number of pages (default: 3): 100
+Enter website URL: https://www.shopufy.com
+Enter number of pages (default: 100): 200
 ```
 
 ![img.png](static/img.png)
@@ -35,11 +35,11 @@ Enter number of pages (default: 3): 100
 1. Pass the website name  as arguments.
 
 ```
-python web_scrapper.py --url https://www.example.com
+python -m scraper --url https://www.shopify.com
 ```
 
 2. Scrape all the pages of the website. (Default: 100)
 
 ```
-python web_scrapper.py --no-limit
+python -m scraper --no-limit
 ```
