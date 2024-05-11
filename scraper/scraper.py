@@ -24,21 +24,6 @@ def save_text(soup, directory, filename):
     with open(os.path.join(directory, filename), 'w', encoding='utf-8') as file:
         file.write(text)
 
-def fetch_page(url, directory, current, total, debug):
-    try:
-        print(f'Fetching page {current + 1} / {total}: {url}') if debug else None
-        start_time = time.time()
-        soup = fetch_website_info(url)
-        if soup is None:
-            return
-        filename = get_full_path(url) + '.txt'
-        save_text(soup, directory, filename)
-        end_time = time.time()
-        if debug:
-            print(f'Fetched and saved {url} in {"{:.2f}".format(end_time - start_time)} seconds.')
-    except Exception as e:
-        print(colored(f'Error fetching page {url}: {e}', 'red'))
-
 class Scraper:
     def __init__(self):
         parser = argparse.ArgumentParser(description='Fetch and save website pages.')
@@ -82,7 +67,7 @@ class Scraper:
                 max_workers = min(math.ceil(num_pages / 10), 10)
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [executor.submit(fetch_page, site_urls[i], directory, i, num_pages, debug) for i in range(num_pages)]
+                futures = [executor.submit(self.fetch_page, site_urls[i], directory, i, num_pages, debug) for i in range(num_pages)]
                 list(tqdm(concurrent.futures.as_completed(futures), total=num_pages))
 
             end_time = time.time()
@@ -91,3 +76,18 @@ class Scraper:
             print(colored(f'Leaving {total_urls - num_pages} pages.', 'yellow')) if left_pages else None
         except Exception as e:
             print(colored(f'Error fetching pages: {e}', 'red'))
+
+    def fetch_page(self, url, directory, current, total):
+        try:
+            print(f'Fetching page {current + 1} / {total}: {url}') if self.debug else None
+            start_time = time.time()
+            soup = fetch_website_info(url)
+            if soup is None:
+                return
+            filename = get_full_path(url) + '.txt'
+            save_text(soup, directory, filename)
+            end_time = time.time()
+            if self.debug:
+                print(f'Fetched and saved {url} in {"{:.2f}".format(end_time - start_time)} seconds.')
+        except Exception as e:
+            print(colored(f'Error fetching page {url}: {e}', 'red'))
