@@ -61,13 +61,10 @@ class Scraper:
             total_urls = len(site_urls)
 
             DEFAULT_PAGES = Constants['MAX_PAGES']
-            if total_urls > DEFAULT_PAGES:
-                if num_pages is None:
-                    print("Found {} pages.".format(total_urls))
-                else:
-                    print("Found {} pages.".format(total_urls))
-                    num_pages = input('Enter number of pages to scrape (default: {}): '.format(DEFAULT_PAGES))
-                    num_pages = int(num_pages) if num_pages else Constants['MAX_PAGES']
+            print("Found {} pages.".format(total_urls))
+            if total_urls > DEFAULT_PAGES and num_pages is not None:
+                num_pages = input('Enter number of pages to scrape (default: {}): '.format(DEFAULT_PAGES))
+                num_pages = int(num_pages) if num_pages else Constants['MAX_PAGES']
 
             num_pages = min(num_pages, total_urls) if num_pages else total_urls
 
@@ -79,7 +76,8 @@ class Scraper:
                 list(tqdm(concurrent.futures.as_completed(futures), total=num_pages))
 
             end_time = time.time()
-            print(colored(f'{num_pages} pages fetched and saved to {directory}. Total time: {end_time - start_time:.2f} seconds.', 'green'))
+            total_time = end_time - start_time
+            print(colored(f'{num_pages} pages fetched and saved to {directory}. Total time: {total_time:.2f} seconds.', 'green'))
             left_pages = total_urls - num_pages
             print(colored(f'Leaving {total_urls - num_pages} pages.', 'yellow')) if left_pages else None
         except Exception as e:
