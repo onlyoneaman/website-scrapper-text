@@ -8,7 +8,7 @@ import concurrent.futures
 from termcolor import colored
 import math
 from tqdm import tqdm
-
+from constants import Constants
 
 def fetch_website_info(url):
     """
@@ -51,20 +51,22 @@ def fetch_pages(base_url, num_pages, max_workers=None,debug=False,reader=False):
     """
     Fetches the specified number of pages from the site and saves them to files in a directory named after the base URL.
     """
-    default_pages = 100
+    default_pages = Constants['MAX_PAGES']
     start_time = time.time()
     directory = os.path.join('public', get_base_url(base_url))
     os.makedirs(directory, exist_ok=True)
     site_urls = get_all_sites(base_url)
     total_urls = len(site_urls)
     if total_urls > default_pages:
-        if num_pages is False or num_pages is None:
+        if num_pages is None:
+            print("Found {} pages.".format(total_urls))
+        else:
             print("Found {} pages.".format(total_urls))
             num_pages = input('Enter number of pages to scrape (default: {}): '.format(default_pages))
             num_pages = int(num_pages) if num_pages else default_pages
     else:
         num_pages = total_urls
-    num_pages = min(num_pages, total_urls)
+    num_pages = min(num_pages, total_urls) if num_pages is not None else total_urls
     left_pages = (total_urls - num_pages) > 0
     print(colored('Fetching {} pages from {}...'.format(num_pages, base_url), 'yellow'))
     print(colored(f'Leaving {total_urls - num_pages} pages.', 'yellow')) if left_pages else None
@@ -97,7 +99,7 @@ def main():
     args = parser.parse_args()
     url = args.url
     debug = args.debug
-    num_pages = None
+    num_pages = None if args.no_limit else Constants['MAX_PAGES']
     reader = args.reader
     if not url:
         url = input('Enter website URL: ')
